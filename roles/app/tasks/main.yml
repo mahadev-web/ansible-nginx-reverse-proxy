@@ -1,0 +1,60 @@
+---
+  - name: Install Python and pip
+    dnf:
+      name:
+        - python3
+        - python3-pip
+
+      state: present
+
+
+  - name: Install Flask
+    pip:
+      name: flask
+      executable: pip3
+
+
+  - name: Create app directory
+    file:
+      path: "{{ app_dir }}"
+      state: directory
+      owner: dev
+      group: dev
+      mode: '0755'
+
+
+  - name: Copy application file
+    copy:
+      src: app.py
+      dest: "{{ app_dir }}/app.py"
+    notify:
+      - Restart app
+
+
+
+  - name: Create systemd sevice for app
+    template:
+      src: myapp.service.j2
+      dest: /etc/systemd/system/myapp.service
+    notify: 
+      - Reload systemd
+      - Restart app
+  - name: Enable and start app
+    systemd:
+      name: myapp
+      enabled: yes
+      state: started
+
+
+  - name: Allow Flask app port
+    ansible.posix.firewalld:
+      port: 3000/tcp
+      permanent: true
+      state: enabled
+      immediate: yes
+
+
+  
+
+
+

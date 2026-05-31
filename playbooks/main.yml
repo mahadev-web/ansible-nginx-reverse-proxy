@@ -1,0 +1,19 @@
+---
+  - name: Common configurations
+    hosts: all
+    become: true
+    roles:
+      - common
+
+  - name: Configure application
+    hosts: app
+    become: true
+    roles:
+      - app
+
+
+  - name: Configure webserver
+    hosts: web
+    become: true
+    roles:
+      - web

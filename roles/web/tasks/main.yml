@@ -1,0 +1,60 @@
+---
+  - name: install nginx
+    dnf:
+      name: nginx
+      state: present
+  - name: Clean nginx.conf (remove default server)
+    copy:
+      dest: /etc/nginx/nginx.conf
+      content: |
+        user nginx;
+        worker_processes auto;
+        error_log /var/log/nginx/error.log;
+        pid /run/nginx.pid;
+
+        events {
+          worker_connections 1024;
+        }
+        http {
+          include /etc/nginx/mime.types;
+          default_type application/octet-stream;
+
+
+          sendfile on;
+          keepalive_timeout 65;
+
+          include /etc/nginx/conf.d/*.conf;
+        }
+
+  - name: Configure nginx reverse proxy
+    template:
+      src: myapp.conf.j2
+      dest: /etc/nginx/conf.d/myapp.conf          
+    notify: Restart nginx
+
+  - name: Start and enable nginx
+    service:
+      name: nginx
+      state: started
+      enabled: true
+
+  - name: Allow HTTP
+    ansible.posix.firewalld:
+      service: http
+      permanent: true
+      state: enabled
+      immediate: true
+
+  - name: Allow nginx to connect to backend (SELinux)
+    ansible.posix.seboolean:
+      name: httpd_can_network_connect
+      state: true
+      persistent: true
+
+
+  - name: Add hosts entry
+    lineinfile:
+      path: /etc/hosts
+      line: "192.168.56.105 serverb"
+
+          

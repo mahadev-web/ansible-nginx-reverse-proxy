@@ -1,0 +1,18 @@
+[Unit]
+Description=Flask App
+After=network.target
+       
+[Service]
+WorkingDirectory={{ app_dir }}
+ExecStart=/usr/bin/python3 /opt/app/app.py
+Restart=always
+User=dev
+Environment=PYTHONUNBUFFERED=1
+[Install]
+WantedBy=multi-user.target
+
+
+  
+
+
+
